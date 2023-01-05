@@ -2,13 +2,14 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+net = cv2.dnn.readNet("st2.weights", "yolov3-tiny.cfg")
+
 def YOLO_DT(img):
     (height, width) = (img.shape[0], img.shape[1])
     blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
 
     net.setInput(blob)
     outs = net.forward(output_layers)
-    
     box = []
     for out in outs:
         for detection in out:
@@ -25,7 +26,7 @@ def YOLO_DT(img):
                 y = int(center_y - h / 2)
 
                 box.append((x, y, x+w, y+h))
-    return box
+    return box, class_id, confidence
 
 
 

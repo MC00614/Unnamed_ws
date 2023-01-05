@@ -1,13 +1,12 @@
 import ImageProcess
 import cv2
 import numpy as np
-import copy
 
 cap = cv2.VideoCapture(0)
 
 frame_size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
-net = cv2.dnn.readNet("st2.weights", "yolov3-tiny.cfg")
+
 
 classes = []
 with open("obj.names", "r") as f:
@@ -22,15 +21,20 @@ while True:
     if not retval:
         break
 
-    # 민찬이가 만든 roi박스가 욜로이미지학습에 영향을 끼치지 않도록 깊은 복사로 완전히 새롭게 img_ROI 생성(img와는 완전 별개가 됨)
-    img_ROI = copy.deepcopy(img)
-
-    img_ROI, pbox = ImageProcess.ROI(img_ROI, scale=1)
-
-    ImageProcess.YOLO_DT(img, pbox)
-
-    cv2.imshow("result1", img_ROI)
-    cv2.imshow("result2", img)
+    box1 = ImageProcess.ROI(img, scale=1)
+    box2, class_id, confidence = ImageProcess.YOLO_DT(img)
+    boxes, class_ids, confidences  = ImageProcess.JUDGE(box1, box2, class_id, confidence)
+    
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+    font = cv2.FONT_HERSHEY_PLAIN
+    for i in range(len(boxes)):
+        if i in indexes:
+            x, y, w, h = boxes[i]
+            label = str(classes[class_ids[i]])
+            color = colors[class_ids[i]]
+            cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+            cv2.putText(img, label, (x, y + 30), font, 1, color, 1)
+    cv2.imshow("result", img)
 
     key = cv2.waitKey(25)
     if key == 27:
