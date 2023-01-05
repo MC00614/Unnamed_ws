@@ -1,3 +1,2 @@
 from .ROI import *
-from .YOLO import *
-from .JUDGE import *
+from .YOLO_JUDGE_DT import *

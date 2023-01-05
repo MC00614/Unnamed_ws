@@ -1,4 +1,3 @@
-import numpy as np
 import cv2
 
 def ROI(img, scale=1, on=False):
